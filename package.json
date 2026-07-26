@@ -1,14 +1,25 @@
 {
   "name": "demo",
   "version": "1.0.0",
-  "description": "",
+  "description": "Playwright + TypeScript test automation framework (UI + API) with POM, fixtures, mocks, secrets and parallel execution.",
   "license": "ISC",
   "author": "",
   "type": "commonjs",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --project=ui-chromium",
+    "test:api": "playwright test --project=api",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:regression": "playwright test --grep @regression",
+    "test:headed": "playwright test --project=ui-chromium --headed",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit"
+  },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
-    "@types/node": "^25.9.1"
+    "@types/node": "^25.9.1",
+    "dotenv": "^17.4.2",
+    "typescript": "^5.9.3"
   }
 }
