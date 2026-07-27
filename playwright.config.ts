@@ -1,38 +1,48 @@
 import { defineConfig, devices } from '@playwright/test';
+import { envConfig } from './config/env.config';
 
+/**
+ * Enterprise Playwright configuration for checkout automation.
+ * @see https://playwright.dev/docs/test-configuration
+ */
 export default defineConfig({
   testDir: './tests',
-  /* Run test files in parallel */
-  workers:2,
-  /* Run tests in files in parallel */
-  fullyParallel:true,
-
-
-
-
-
-
-
-  
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI ? 'blob' : 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    /* Base URL to use in actions like `await page.goto('')`. */
-    baseURL: 'https://practicetestautomation.com',
-      screenshot: 'only-on-failure',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 1,
+  workers: process.env.CI ? 2 : undefined,
+  timeout: 120_000,
+  expect: {
+    timeout: 15_000,
   },
-
-  /* Configure projects for major browsers */
+  reporter: process.env.CI
+    ? [
+        ['blob'],
+        ['list'],
+        ['json', { outputFile: 'artifacts/test-results.json' }],
+      ]
+    : [
+        ['list'],
+        ['html', { open: 'never', outputFolder: 'playwright-report' }],
+        ['json', { outputFile: 'artifacts/test-results.json' }],
+      ],
+  use: {
+    baseURL: envConfig.baseUrl,
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+    trace: 'retain-on-failure',
+    actionTimeout: envConfig.defaultTimeoutMs,
+    navigationTimeout: envConfig.navigationTimeoutMs,
+    ignoreHTTPSErrors: true,
+    extraHTTPHeaders: {
+      'X-Test-Environment': envConfig.name,
+    },
+  },
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-    }
+    },
   ],
-
-  
+  outputDir: 'test-results',
 });

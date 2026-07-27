@@ -1,0 +1,24 @@
+{
+  "restaurant": "Spice Route Kitchen",
+  "foodItem": "Butter Chicken Bowl",
+  "quantity": 2,
+  "coupon": "SAVE20",
+  "couponDiscountAmount": 20,
+  "address": {
+    "label": "Home",
+    "line1": "221B Baker Street",
+    "line2": "Apartment 4",
+    "city": "San Francisco",
+    "state": "CA",
+    "zipCode": "94107",
+    "landmark": "Near Civic Center"
+  },
+  "payment": {
+    "method": "WALLET",
+    "walletName": "FoodWallet"
+  },
+  "itemUnitPrice": 14.99,
+  "deliveryFee": 2.99,
+  "expectedPrice": 32.97,
+  "expectedStatus": "CONFIRMED"
+}
