@@ -1,48 +1,62 @@
-import {Page , Locator , expect} from '@playwright/test';
-import testData from '../test-data.json';
+import type { Locator, Page } from '@playwright/test';
+import { BasePage } from './BasePage';
+import { Logger } from '../utils/Logger';
 
-export class LoginPage{
+/**
+ * Authentication page — email/password login.
+ * Contains UI interactions only; no business assertions beyond page readiness.
+ */
+export class LoginPage extends BasePage {
+  private readonly emailInput: Locator;
+  private readonly passwordInput: Locator;
+  private readonly submitButton: Locator;
+  private readonly errorMessage: Locator;
+  private readonly successMarker: Locator;
 
+  constructor(page: Page, logger?: Logger) {
+    super(page, logger?.child('LoginPage') ?? new Logger('LoginPage'));
+    this.emailInput = page.getByTestId('login-email').or(page.getByLabel(/email|username/i));
+    this.passwordInput = page.getByTestId('login-password').or(page.getByLabel(/password/i));
+    this.submitButton = page.getByTestId('login-submit').or(
+      page.getByRole('button', { name: /log ?in|sign ?in|submit/i }),
+    );
+    this.errorMessage = page.getByTestId('login-error').or(page.locator('#error'));
+    this.successMarker = page.getByTestId('home-feed').or(
+      page.getByRole('heading', { name: /welcome|home|restaurants/i }),
+    );
+  }
 
-    readonly page : Page;
+  async open(): Promise<void> {
+    await this.navigateTo('/login');
+  }
 
-    readonly email: Locator;
+  async enterEmail(email: string): Promise<void> {
+    await this.fill(this.emailInput, email, 'Email');
+  }
 
-    readonly password: Locator;
+  async enterPassword(password: string): Promise<void> {
+    await this.fill(this.passwordInput, password, 'Password');
+  }
 
-    readonly submitBtn: Locator;
+  async submit(): Promise<void> {
+    await this.click(this.submitButton, 'Login submit');
+  }
 
-    readonly errMsg: Locator;
+  async login(email: string, password: string): Promise<void> {
+    this.logger.info('Performing login', { email });
+    await this.enterEmail(email);
+    await this.enterPassword(password);
+    await this.submit();
+    await this.waitForVisible(this.successMarker);
+    this.logger.info('Login successful');
+  }
 
+  async getErrorMessage(): Promise<string> {
+    await this.waitForVisible(this.errorMessage);
+    return this.getText(this.errorMessage);
+  }
 
-
-    constructor ( page: Page){
-        this.page= page;
-        this.email= page.getByLabel('username');
-        this.password= page.getByLabel('password');
-        this.submitBtn= page.getByRole('button', {name : 'submit'});
-        this.errMsg= page.locator('#error');
-
-
-    }
-
-    async navigate(){
-        await this.page.goto('/practice-test-login/');
-    }
-    async login(email: string , password : string){
-        await this.email.fill(email);
-        await this.password.fill(password);
-        await this.submitBtn.click();
-        await expect(this.page).toHaveURL('/logged-in-successfully/');
-
-    }
-
-    async errorMessage(msg: string){
-        await this.email.fill(testData.incorrectusr);
-        await this.password.fill(testData.incorrectusr);
-        await this.submitBtn.click();
-        await expect(this.errMsg).toHaveText(msg);
-
-    }
-
+  async isLoggedIn(): Promise<boolean> {
+    return this.isVisible(this.successMarker);
+  }
 }
